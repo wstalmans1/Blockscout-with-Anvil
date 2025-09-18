@@ -28,9 +28,9 @@ jobs:
         id: setup
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          docker-remote-multi-platform: true
-          docker-arm-host: ${{ secrets.ARM_RUNNER_HOSTNAME }}
-          docker-arm-host-key: ${{ secrets.ARM_RUNNER_KEY }}
+          docker-remote-multi-platform: ${{ secrets.ARM_RUNNER_HOSTNAME != '' && secrets.ARM_RUNNER_KEY != '' }}
+          docker-arm-host: ${{ secrets.ARM_RUNNER_HOSTNAME || '' }}
+          docker-arm-host-key: ${{ secrets.ARM_RUNNER_KEY || '' }}
 
       - name: Build and push Docker image (indexer + API)
         uses: docker/build-push-action@v6
@@ -42,9 +42,7 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/blockscout/blockscout-private:buildcache,mode=max
           tags: ghcr.io/blockscout/blockscout-private:master, ghcr.io/blockscout/blockscout-private:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}
           labels: ${{ steps.setup.outputs.docker-labels }}
-          platforms: |
-            linux/amd64
-            linux/arm64/v8
+          platforms: ${{ steps.setup.outputs.docker-platforms }}
           build-args: |
             DECODE_NOT_A_CONTRACT_CALLS=false
             MIXPANEL_URL=
@@ -62,9 +60,7 @@ jobs:
           push: true
           tags: ghcr.io/blockscout/blockscout-private:${{ env.RELEASE_VERSION }}.commit.${{ env.SHORT_SHA }}-indexer
           labels: ${{ steps.setup.outputs.docker-labels }}
-          platforms: |
-            linux/amd64
-            linux/arm64/v8
+          platforms: ${{ steps.setup.outputs.docker-platforms }}
           build-args: |
             DISABLE_API=true
             DECODE_NOT_A_CONTRACT_CALLS=false
@@ -84,9 +80,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/blockscout/blockscout-private:buildcache
           tags: ghcr.io/blockscout/blockscout-private:frontend-main
           labels: ${{ steps.setup.outputs.docker-labels }}
-          platforms: |
-            linux/amd64
-            linux/arm64/v8
+          platforms: ${{ steps.setup.outputs.docker-platforms }}
           build-args: |
             SESSION_COOKIE_DOMAIN=k8s-dev.blockscout.com
             BLOCKSCOUT_VERSION=v${{ env.RELEASE_VERSION }}.+commit.${{ env.SHORT_SHA }}
