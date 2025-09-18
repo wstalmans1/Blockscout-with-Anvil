@@ -20,6 +20,7 @@ permissions:
 jobs:
   push_to_registry:
     name: Push Docker image to GitHub Container Registry
+    if: ${{ github.repository_owner == 'blockscout' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -87,6 +88,7 @@ jobs:
             RELEASE_VERSION=${{ env.RELEASE_VERSION }}
   deploy_e2e:
     needs: push_to_registry
+    if: ${{ github.repository_owner == 'blockscout' }}
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
