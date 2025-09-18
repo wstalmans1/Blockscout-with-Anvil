@@ -104,4 +104,3 @@ defmodule BlockScout.Mixfile do
     ]
   end
 end
-# Test change
